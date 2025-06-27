@@ -1,4 +1,7 @@
 ---
+- name: Prepare for installation
+  ansible.builtin.include_tasks: prepare.yml
+
 - name: Create Grafana data directory
   ansible.builtin.file:
     path: "{{ grafana_dir }}"

@@ -1,4 +1,7 @@
 ---
+- name: Prepare for installation
+  ansible.builtin.include_tasks: prepare.yml
+
 - name: Create Prometheus config directory
   ansible.builtin.file:
     path: "{{ prometheus_dir }}"

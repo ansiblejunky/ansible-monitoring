@@ -1,4 +1,7 @@
 ---
+- name: Prepare for installation
+  ansible.builtin.include_tasks: prepare.yml
+
 - name: Create node_exporter container
   containers.podman.podman_container:
     name: node_exporter

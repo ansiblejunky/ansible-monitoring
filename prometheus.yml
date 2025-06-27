@@ -1,10 +1,10 @@
-- name: Prepare grafana
+- name: Prepare prometheus
   hosts: all
   gather_facts: false
 
   tasks:
 
-    - name: Install grafana
+    - name: Install prometheus
       ansible.builtin.include_role:
         name: grafana
-        tasks_from: grafana
+        tasks_from: prometheus
