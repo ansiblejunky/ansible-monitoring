@@ -1,0 +1,83 @@
+---
+- name: Create Grafana data directory
+  ansible.builtin.file:
+    path: "{{ grafana_dir }}"
+    state: directory
+    mode: ug=rwx
+
+# - name: Create Grafana config file
+#   ansible.builtin.template:
+#     src: grafana.ini.j2
+#     dest: "{{ grafana_dir }}/grafana.ini"
+#     mode: ug=rw
+
+# Run Grafana containerized image
+# https://grafana.com/docs/grafana/latest/setup-grafana/installation/docker/
+- name: Run Grafana container
+  containers.podman.podman_container:
+    name: grafana
+    image: docker.io/grafana/grafana
+    state: started
+    detach: true
+    restart_policy: always
+    publish:
+      - "3000:3000"
+    volumes:
+      - "{{ grafana_dir }}:/var/lib/grafana:Z"
+  become: true
+
+- name: Wait for Grafana to start
+  ansible.builtin.wait_for:
+    host: localhost
+    port: 3000
+    delay: 10
+    timeout: 60
+    state: started
+  become: true
+
+- name: Generate systemd unit file for grafana container
+  containers.podman.podman_generate_systemd:
+    name: grafana
+    new: true
+    no_header: true
+    dest: /etc/systemd/system
+  become: true
+
+- name: Ensure grafana container is started and enabled
+  ansible.builtin.systemd:
+    name: container-grafana
+    daemon_reload: true
+    state: started
+    enabled: true
+  become: true
+
+# - name: Add Prometheus as a Grafana datasource
+#   community.grafana.grafana_datasource:
+#     name: Prometheus
+#     grafana_url: http://localhost:3000
+#     grafana_user: admin
+#     grafana_password: admin
+#     org_id: 1
+#     ds_type: prometheus
+#     ds_url: http://localhost:9090
+#     access: proxy
+#     is_default: true
+
+# - name: Configure Grafana Prometheus Data Source
+#   ansible.builtin.uri:
+#     url: "http://0.0.0.0:3000/api/datasources"
+#     method: POST
+#     user: "admin"
+#     password: "admin"
+#     force_basic_auth: true
+#     validate_certs: false
+#     headers:
+#       Content-Type: "application/json"
+#     body_format: json
+#     body:
+#       name: "Prometheus"
+#       type: "prometheus"
+#       url: "http://10.0.1.189:9090"
+#       access: "proxy"
+#       isDefault: true
+#     status_code: 200, 409

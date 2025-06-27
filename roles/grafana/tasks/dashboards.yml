@@ -1,0 +1,18 @@
+---
+- name: Import Node Exporter Full dashboard from Grafana.com
+  community.grafana.grafana_dashboard:
+    grafana_url: "{{ grafana_url }}"
+    grafana_user: "{{ grafana_user }}"
+    grafana_password: "{{ grafana_password }}"
+    dashboard_id: 1860
+    overwrite: true
+    state: present
+
+- name: Import local Grafana dashboard JSON
+  community.grafana.grafana_dashboard:
+    grafana_url: "{{ grafana_url }}"
+    grafana_user: "{{ grafana_user }}"
+    grafana_password: "{{ grafana_password }}"
+    path: files/grafana/node_exporter_full.json
+    overwrite: true
+    state: present

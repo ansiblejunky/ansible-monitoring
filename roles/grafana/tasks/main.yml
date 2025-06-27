@@ -1,0 +1,10 @@
+---
+- name: Prepare for installation
+  ansible.builtin.include_tasks: prepare.yml
+
+- name: Install Prometheus
+  ansible.builtin.include_tasks: prometheus.yml
+
+- name: Install Grafana
+  ansible.builtin.include_tasks: grafana.yml
+

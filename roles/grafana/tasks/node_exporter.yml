@@ -1,0 +1,34 @@
+---
+- name: Create node_exporter container
+  containers.podman.podman_container:
+    name: node_exporter
+    image: docker.io/prom/node-exporter:latest
+    state: started
+    detach: true
+    restart_policy: always
+    publish_all: false
+    ports:
+      - "9100:9100"
+    command:
+      - '--path.rootfs=/host'
+    volumes:
+      - '/:/host:ro,rslave'
+      - '/run/udev:/run/udev:ro,Z'
+  notify: restart node_exporter
+  become: true
+
+- name: Generate systemd unit file for node_exporter container
+  containers.podman.podman_generate_systemd:
+    name: node_exporter
+    new: true
+    no_header: true
+    dest: /etc/systemd/system
+  become: true
+
+- name: Ensure node_exporter container is started and enabled
+  ansible.builtin.systemd:
+    name: container-node_exporter
+    daemon_reload: true
+    state: started
+    enabled: true
+  become: true

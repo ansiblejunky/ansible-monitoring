@@ -1,0 +1,46 @@
+---
+- name: Create Prometheus config directory
+  ansible.builtin.file:
+    path: "{{ prometheus_dir }}"
+    state: directory
+    mode: ug=rwx
+  become: true
+
+- name: Create Prometheus config file
+  ansible.builtin.template:
+    src: prometheus.yml.j2
+    dest: "{{ prometheus_dir }}/prometheus.yml"
+    mode: ug=rw
+  become: true
+
+# TODO: Validate config first https://www.robustperception.io/how-to-check-your-prometheus-yml-is-valid/
+# podman exec -it prometheus promtool check config /etc/prometheus/prometheus.yml
+
+- name: Run Prometheus container
+  containers.podman.podman_container:
+    name: prometheus
+    image: docker.io/prom/prometheus:v3.3.0-rc.1
+    state: started
+    detach: true
+    restart_policy: always
+    publish:
+      - "9090:9090"
+    volumes:
+      - "{{ prometheus_dir }}/prometheus.yml:/etc/prometheus/prometheus.yml:Z"
+  become: true
+
+- name: Generate systemd unit file for prometheus container
+  containers.podman.podman_generate_systemd:
+    name: prometheus
+    new: true
+    no_header: true
+    dest: /etc/systemd/system
+  become: true
+
+- name: Ensure prometheus container is started and enabled
+  ansible.builtin.systemd:
+    name: container-prometheus
+    daemon_reload: true
+    state: started
+    enabled: true
+  become: true

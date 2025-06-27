@@ -1,0 +1,19 @@
+---
+- name: restart node_exporter
+  ansible.builtin.systemd:
+    name: container-node_exporter.service
+    daemon_reload: true
+    state: restarted
+  become: true
+
+- name: restart prometheus
+  containers.podman.podman_container:
+    name: prometheus
+    image: quay.io/prometheus/prometheus
+    state: restarted
+
+- name: restart grafana
+  containers.podman.podman_container:
+    name: grafana
+    image: grafana/grafana
+    state: restarted

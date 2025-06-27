@@ -1,0 +1,9 @@
+- name: Prepare grafana server
+  hosts: all
+  gather_facts: false
+
+  tasks:
+
+    - name: Install grafana/promotheus
+      ansible.builtin.include_role:
+        name: grafana
